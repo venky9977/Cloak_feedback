@@ -6,9 +6,9 @@ import { NextRequest, NextResponse } from "next/server";
 
 export async function DELETE(
   request: NextRequest,
-  context: { params: { messageid: string } } // Correct typing for context
+  context: { params: { messageid: string } }
 ) {
-  const { messageid } = context.params; // Extract the dynamic route parameter
+  const { messageid } = context.params;
   await dbConnect();
 
   const session = await getServerSession(authOptions);
@@ -23,11 +23,12 @@ export async function DELETE(
     );
   }
 
-  const user = session.user;
+  // Explicitly cast user
+  const user = session.user as User;
 
   try {
     const updateResult = await UserModel.updateOne(
-      { _id: user._id },
+      { _id: user._id }, // Use _id instead of id
       { $pull: { messages: { _id: messageid } } }
     );
 
