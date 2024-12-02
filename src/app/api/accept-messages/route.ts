@@ -1,4 +1,4 @@
-import { getServerSession } from "next-auth";
+import { getServerSession } from "next-auth/next";
 import { authOptions } from "../auth/[...nextauth]/options";
 import dbConnect from "@/lib/dbConnect";
 import UserModel from "@/model/User";
@@ -26,7 +26,7 @@ export async function POST(request: Request) {
     try {
         const updatedUser = await UserModel.findByIdAndUpdate(
             userId,
-            { isAcceptingMessage: acceptMessages},
+            { isAcceptingMessages: acceptMessages }, // Ensure this field matches the one in POST request
             { new: true}
         )
 
@@ -34,7 +34,7 @@ export async function POST(request: Request) {
             return Response.json(
                 {
                     success: false,
-                    message: "Failed to update user status to accept message"
+                    message: "Failed to update user status to accept messages"
                 },
                 { status: 401 }
             )
@@ -54,12 +54,11 @@ export async function POST(request: Request) {
         return Response.json(
             {
                 success: false,
-                message: "Failed to update user status to accept message"
+                message: "Failed to update user status to accept messages"
             },
             { status: 500 }
         )
     }
-    
 }
 
 export async function GET(request: Request) {
@@ -95,7 +94,7 @@ export async function GET(request: Request) {
         return Response.json(
             {
                 success: true,
-                isAcceptingMessages: foundUser.isAcceptingMessage
+                isAcceptingMessages: foundUser.isAcceptingMessages // Consistent field name
             },
             { status: 200 }
         )

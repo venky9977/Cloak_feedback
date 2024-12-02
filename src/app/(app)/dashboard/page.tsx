@@ -1,6 +1,5 @@
 'use client';
 
-import MessageCard from "@/components/MessageCard";
 import { Button } from "@/components/ui/button";
 import { Separator } from "@/components/ui/separator";
 import { Switch } from "@/components/ui/switch";
@@ -15,18 +14,15 @@ import { User } from "next-auth";
 import { useSession } from "next-auth/react";
 import { useCallback, useEffect, useState } from "react";
 import { useForm } from "react-hook-form";
+import MessageCard from "@/components/MessageCard";
 
 const DashboardPage = () => {
   const [messages, setMessages] = useState<Message[]>([]);
   const [isLoading, setIsLoading] = useState(false);
   const [isSwitchLoading, setIsSwitchLoading] = useState(false);
-
+  const [profileUrl, setProfileUrl] = useState<string>("");
+  
   const { toast } = useToast();
-
-  const handleDeleteMessage = (messageId: string) => {
-    setMessages(messages.filter((message) => message._id !== messageId));
-  };
-
   const { data: session } = useSession();
 
   const form = useForm({
@@ -34,14 +30,14 @@ const DashboardPage = () => {
   });
 
   const { register, watch, setValue } = form;
-
   const acceptMessages = watch("acceptMessages");
 
+  // Fetch current accept messages status from backend
   const fetchAcceptMessage = useCallback(async () => {
     setIsSwitchLoading(true);
     try {
       const response = await axios.get<ApiResponse>("/api/accept-messages");
-      setValue("acceptMessages", response.data.isAcceptingMessages);
+      setValue("acceptMessages", response.data.isAcceptingMessages); // Set initial value of switch
     } catch (error) {
       const axiosError = error as AxiosError<ApiResponse>;
       toast({
@@ -54,6 +50,7 @@ const DashboardPage = () => {
     }
   }, [setValue, toast]);
 
+  // Fetch the list of messages
   const fetchMessages = useCallback(async (refresh: boolean = false) => {
     setIsLoading(true);
     setIsSwitchLoading(false);
@@ -88,14 +85,30 @@ const DashboardPage = () => {
     if (!session || !session.user) return;
     fetchAcceptMessage();
     fetchMessages();
+    
+    // Ensure window logic is only executed on the client
+    if (typeof window !== "undefined" && session.user) {
+      const username = (session.user as User).username;
+      const baseUrl = `${window.location.protocol}//${window.location.host}`;
+      const profileLink = username ? `${baseUrl}/u/${username}` : "";
+      setProfileUrl(profileLink);
+    }
   }, [session, fetchAcceptMessage, fetchMessages]);
 
+  const handleDeleteMessage = (messageId: string) => {
+    setMessages(messages.filter((message) => message._id !== messageId));
+  };
+
+  // Handle toggling the switch for accept messages
   const handleSwitchChange = async () => {
+    setIsSwitchLoading(true);
     try {
       const response = await axios.post<ApiResponse>("/api/accept-messages", {
-        acceptMessages: !acceptMessages,
+        acceptMessages: !acceptMessages, // Toggle the acceptMessages state
       });
-      setValue("acceptMessages", !acceptMessages);
+
+      setValue("acceptMessages", !acceptMessages); // Update local state for the form
+
       toast({
         title: response.data.message,
         variant: "default",
@@ -107,12 +120,10 @@ const DashboardPage = () => {
         description: axiosError.response?.data.message || "Failed to update settings",
         variant: "destructive",
       });
+    } finally {
+      setIsSwitchLoading(false);
     }
   };
-
-  const username = session?.user ? (session.user as User).username : null;
-  const baseUrl = `${window.location.protocol}//${window.location.host}`;
-  const profileUrl = username ? `${baseUrl}/u/${username}` : "";
 
   const copyToClipboard = () => {
     if (!profileUrl) return;

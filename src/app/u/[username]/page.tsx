@@ -21,7 +21,6 @@ const PublicProfilePage = () => {
     try {
       setIsFetching(true);
 
-      // Append a unique parameter to force fresh results
       const res = await fetch('/api/suggest-messages', {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },

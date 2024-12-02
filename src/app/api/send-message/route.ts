@@ -1,57 +1,54 @@
 import dbConnect from "@/lib/dbConnect";
 import UserModel from "@/model/User";
 
-import { Message } from "@/model/User";
-import { create } from "domain";
-
 export async function POST(request: Request) {
-    await dbConnect()
+    await dbConnect();
 
-    const { username, content } = await request.json()
+    const { username, content } = await request.json();
 
     try {
-        const user = await UserModel.findOne({username})
+        const user = await UserModel.findOne({ username });
         if (!user) {
-            return Response.json(
-                {
+            return new Response(
+                JSON.stringify({
                     success: false,
-                    message: "User not found"
-                },
-                { status : 404}
-            )
+                    message: "User not found",
+                }),
+                { status: 404 }
+            );
         }
 
-        //is user accepting the messages
-        if(!user.isAcceptingMessage) {
-            return Response.json(
-                {
+        // If user is not accepting messages, return a message
+        if (!user.isAcceptingMessages) {
+            return new Response(
+                JSON.stringify({
                     success: false,
-                    message: "User is not accepting messages"
-                },
-                { status : 403}
-            )
+                    message: "User is not accepting messages",
+                }),
+                { status: 403 }
+            );
         }
 
-        const newMessage = { content, createdAt: new Date() }
-        user.messages.push(newMessage as Message)
-        await user.save()
+        // Add the new message to the user's messages
+        const newMessage = { content, createdAt: new Date() };
+        user.messages.push(newMessage);
+        await user.save();
 
-        return Response.json(
-            {
+        return new Response(
+            JSON.stringify({
                 success: true,
-                message: "Message sent successfully"
-            },
-            { status : 401}
-        )
-
+                message: "Message sent successfully",
+            }),
+            { status: 200 }
+        );
     } catch (error) {
-        console.log("Error adding messages ", error)
-        return Response.json(
-            {
+        console.error("Error sending message:", error);
+        return new Response(
+            JSON.stringify({
                 success: false,
-                message: "Internal server error"
-            },
-            { status : 500}
-        )
+                message: "Internal server error",
+            }),
+            { status: 500 }
+        );
     }
 }
