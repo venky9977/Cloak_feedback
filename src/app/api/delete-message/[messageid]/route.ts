@@ -6,9 +6,13 @@ import { NextRequest, NextResponse } from "next/server";
 
 export async function DELETE(
   request: NextRequest,
-  { params }: { params: { messageid: string } }
+  context: { params: Record<string, string | string[]> }
 ) {
-  const { messageid } = params;
+  const { messageid } = context.params;
+
+  // Handle the possibility of messageid being an array
+  const messageId = Array.isArray(messageid) ? messageid[0] : messageid;
+
   await dbConnect();
 
   const session = await getServerSession(authOptions);
@@ -28,8 +32,8 @@ export async function DELETE(
 
   try {
     const updateResult = await UserModel.updateOne(
-      { _id: user._id }, // Use _id instead of id
-      { $pull: { messages: { _id: messageid } } }
+      { _id: user._id },
+      { $pull: { messages: { _id: messageId } } }
     );
 
     if (updateResult.modifiedCount === 0) {
