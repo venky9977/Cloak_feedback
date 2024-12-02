@@ -6,9 +6,9 @@ import { NextRequest, NextResponse } from "next/server";
 
 export async function DELETE(
   request: NextRequest,
-  { params }: { params: Record<string, string> } // Use Record for dynamic route parameters
+  context: { params: { messageid: string } } // Correct typing for context
 ) {
-  const messageid = params.messageid; // Extract the parameter
+  const { messageid } = context.params; // Extract the dynamic route parameter
   await dbConnect();
 
   const session = await getServerSession(authOptions);
