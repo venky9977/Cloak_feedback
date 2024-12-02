@@ -2,18 +2,16 @@ import { getServerSession } from "next-auth";
 import { authOptions } from "../../auth/[...nextauth]/options";
 import dbConnect from "@/lib/dbConnect";
 import UserModel from "@/model/User";
-import { NextRequest, NextResponse } from "next/server"; // Correct imports
-import { User } from "next-auth";
+import { NextRequest, NextResponse } from "next/server";
 
 export async function DELETE(
   request: NextRequest,
-  context: { params: { messageid: string } } // Ensure context typing
+  { params }: { params: Record<string, string> } // Use Record for dynamic route parameters
 ) {
-  const { messageid } = context.params; // Correctly extract the dynamic route parameter
+  const messageid = params.messageid; // Extract the parameter
   await dbConnect();
 
   const session = await getServerSession(authOptions);
-  const user: User = session?.user as User;
 
   if (!session || !session.user) {
     return NextResponse.json(
@@ -25,9 +23,11 @@ export async function DELETE(
     );
   }
 
+  const user = session.user;
+
   try {
     const updateResult = await UserModel.updateOne(
-      { _id: user._id },
+      { _id: user.id },
       { $pull: { messages: { _id: messageid } } }
     );
 
@@ -59,4 +59,3 @@ export async function DELETE(
     );
   }
 }
-
