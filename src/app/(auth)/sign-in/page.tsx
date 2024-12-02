@@ -32,8 +32,6 @@ const Page = () => {
   })
 
   const onSubmit = async (data: z.infer<typeof signInSchema>) => {
-    console.log(process.env.MONGODB_URI)
-    console.log(process.env.OPENAI_API_KEY)
     const result = await signIn('credentials', {
       redirect: false,
       identifier: data.identifier,

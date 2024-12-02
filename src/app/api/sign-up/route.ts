@@ -12,6 +12,10 @@ const SignUpSchema = z.object({
 });
 
 export async function POST(request: NextRequest) {
+  // Log environment variables
+  console.log("MONGODB_URI: ", process.env.MONGODB_URI);
+  console.log("OPENAI_API_KEY: ", process.env.OPENAI_API_KEY);
+
   await dbConnect();
 
   try {
