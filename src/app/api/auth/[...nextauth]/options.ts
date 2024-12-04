@@ -11,7 +11,7 @@ interface Credentials {
 
 // Extend NextAuth User interface to include your custom fields
 interface User extends NextAuthUser {
-  _id: string;  // _id is expected to be a string in your model
+  _id: string; 
   isVerified: boolean;
   isAcceptingMessages: boolean;
   username: string;
@@ -51,7 +51,7 @@ export const authOptions: NextAuthOptions = {
           const isPasswordCorrect = await bcrypt.compare(password, user.password);
 
           if (isPasswordCorrect) {
-            // Return the user object in the shape expected by NextAuth
+            
             return {
               _id: user._id.toString(),
               username: user.username,
@@ -71,6 +71,7 @@ export const authOptions: NextAuthOptions = {
   callbacks: {
     async jwt({ token, user }) {
       if (user) {
+        token.sub = user._id; 
         token._id = user._id;
         token.isVerified = user.isVerified;
         token.isAcceptingMessages = user.isAcceptingMessages;
@@ -80,6 +81,7 @@ export const authOptions: NextAuthOptions = {
     },
     async session({ session, token }) {
       if (token) {
+        session.user._id = token.sub as string; // Use token.sub for user ID
         session.user._id = token._id as string;
         session.user.isVerified = token.isVerified as boolean;
         session.user.isAcceptingMessages = token.isAcceptingMessages as boolean;
@@ -92,7 +94,7 @@ export const authOptions: NextAuthOptions = {
     signIn: "/sign-in",
   },
   session: {
-    strategy: "jwt", // Ensure you are using JWTs for session management
+    strategy: "jwt", 
   },
   secret: process.env.NEXTAUTH_SECRET,
 };

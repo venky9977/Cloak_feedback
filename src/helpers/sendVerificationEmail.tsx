@@ -21,7 +21,7 @@ export async function sendVerificationEmail(
     // Create the email message
     const msg = {
       to: email, // Recipient's email address
-      from: process.env.SENDGRID_SENDER_EMAIL as string, // Your verified sender email
+      from: process.env.SENDGRID_SENDER_EMAIL as string, // Verified sender email
       subject: 'Cloak Feedback | Verification Code',
       text: `Hello ${username},
 

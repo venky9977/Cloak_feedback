@@ -1,4 +1,5 @@
 'use client';
+
 import {
   Card,
   CardContent,
@@ -20,7 +21,7 @@ import {
 import { X } from "lucide-react";
 import { Message } from "@/model/User";
 import { useToast } from "@/hooks/use-toast";
-import axios from "axios";
+import axios, { AxiosError } from "axios";
 import { ApiResponse } from "@/types/ApiResponse";
 
 type MessageCardProps = {
@@ -33,15 +34,22 @@ const MessageCard = ({ message, onMessageDelete }: MessageCardProps) => {
 
   const handleDeleteConfirm = async () => {
     try {
-      const response = await axios.delete<ApiResponse>(`/api/delete-message/${message._id}`);
+      const response = await axios.delete<ApiResponse>(
+        `/api/delete-message/${message._id}`,
+        {
+          withCredentials: true, // Include credentials in the request
+        }
+      );
       toast({
         title: response.data.message,
       });
       onMessageDelete(message._id);
     } catch (error) {
+      const axiosError = error as AxiosError<ApiResponse>;
       toast({
         title: "Error",
-        description: "Failed to delete the message.",
+        description:
+          axiosError.response?.data?.message || "Failed to delete the message.",
         variant: "destructive",
       });
     }
@@ -51,7 +59,7 @@ const MessageCard = ({ message, onMessageDelete }: MessageCardProps) => {
   const formattedDate = new Date(message.createdAt).toLocaleString();
 
   return (
-    <Card>
+    <Card className="relative">
       {/* Header with Message Title and Date */}
       <CardHeader>
         <div>
@@ -59,32 +67,34 @@ const MessageCard = ({ message, onMessageDelete }: MessageCardProps) => {
           <CardDescription>{formattedDate}</CardDescription>
         </div>
       </CardHeader>
-      {/* Delete Button Positioned Below */}
-      <CardContent className="flex justify-end">
-        <AlertDialog>
-          <AlertDialogTrigger asChild>
-            <button
-              className="bg-red-500 text-white w-8 h-8 flex items-center justify-center rounded-md"
-              aria-label="Delete Message"
-            >
-              <X className="w-4 h-4" />
-            </button>
-          </AlertDialogTrigger>
-          <AlertDialogContent>
-            <AlertDialogHeader>
-              <AlertDialogTitle>Are you absolutely sure?</AlertDialogTitle>
-              <AlertDialogDescription>
-                This action cannot be undone. This will permanently delete your
-                message.
-              </AlertDialogDescription>
-            </AlertDialogHeader>
-            <AlertDialogFooter>
-              <AlertDialogCancel>Cancel</AlertDialogCancel>
-              <AlertDialogAction onClick={handleDeleteConfirm}>Continue</AlertDialogAction>
-            </AlertDialogFooter>
-          </AlertDialogContent>
-        </AlertDialog>
+      {/* Message Content */}
+      <CardContent>
+        {/* Additional content can be placed here if needed */}
       </CardContent>
+      {/* Delete Button Positioned at the Bottom Right */}
+      <AlertDialog>
+        <AlertDialogTrigger asChild>
+          <button
+            className="absolute bottom-2 right-2 bg-red-500 text-white w-8 h-8 flex items-center justify-center rounded-half hover:bg-red-600 focus:outline-none"
+            aria-label="Delete Message"
+          >
+            X
+          </button>
+        </AlertDialogTrigger>
+        <AlertDialogContent>
+          <AlertDialogHeader>
+            <AlertDialogTitle>Are you absolutely sure?</AlertDialogTitle>
+            <AlertDialogDescription>
+              This action cannot be undone. This will permanently delete your
+              message.
+            </AlertDialogDescription>
+          </AlertDialogHeader>
+          <AlertDialogFooter>
+            <AlertDialogCancel>Cancel</AlertDialogCancel>
+            <AlertDialogAction onClick={handleDeleteConfirm}>Delete</AlertDialogAction>
+          </AlertDialogFooter>
+        </AlertDialogContent>
+      </AlertDialog>
     </Card>
   );
 };

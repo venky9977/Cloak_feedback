@@ -2,12 +2,11 @@ import OpenAI from 'openai';
 import { OpenAIStream, StreamingTextResponse } from 'ai';
 import { NextRequest, NextResponse } from 'next/server';
 
-// Create an OpenAI API client
+// OpenAI API client
 const openai = new OpenAI({
-  apiKey: process.env.OPENAI_API_KEY, // Ensure this environment variable is correctly set
+  apiKey: process.env.OPENAI_API_KEY,
 });
 
-// IMPORTANT! Set the runtime to edge
 export const runtime = 'edge';
 
 // Pre-defined fallback suggestions
@@ -29,7 +28,7 @@ export async function POST(req: NextRequest) {
     const lastRequestTime = rateLimitMap.get(clientIP) || 0;
     const timeSinceLastRequest = now - lastRequestTime;
 
-    if (timeSinceLastRequest < 5000) { // 5-second rate limit
+    if (timeSinceLastRequest < 2000) { // 2-second rate limit
       return NextResponse.json(
         { error: 'Rate limit exceeded. Please wait a few seconds before trying again.' },
         { status: 429 }
@@ -41,7 +40,7 @@ export async function POST(req: NextRequest) {
     const { promptOverride } = await req.json();
     const prompt =
       promptOverride ||
-      "Create a list of three open-ended and engaging questions formatted as a single string. Each question should be separated by '||'.";
+      "Create a list of three open-ended and engaging questions formatted as a single string. Each question should be separated by '| | '. These questions are for an anonymous social messaging platform, like Qooh.me, and should be suitable for a diverse audience. Avoid personal or sensitive topics, focusing instead on universal themes that encourage friendly interaction. For example, your output should be structured like this: 'What's a hobby you've recently started? | | If you could have dinner with any historical figure, who would it be?| | What's a simple thing that makes you happy?'. Ensure the questions are intriguing, foster curiosity, and contribute to a positive and welcoming conversational environment. Do not give any additional text, just the 3 questions. Do not number them in the beginning as well";
 
     // API Request
     const response = await openai.chat.completions.create({

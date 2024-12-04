@@ -1,40 +1,39 @@
 import { NextRequest, NextResponse } from "next/server";
 import { getToken } from "next-auth/jwt";
-import { authOptions } from "@/app/api/auth/[...nextauth]/options";
 import dbConnect from "@/lib/dbConnect";
 import UserModel from "@/model/User";
-import { User } from "@/model/User"; // Import your User type
 
 interface DeleteMessageParams {
   messageid: string;
 }
 
 export async function DELETE(
-  req: NextRequest, // Correctly typed NextRequest
-  { params }: { params: Promise<DeleteMessageParams> } // Wrap params in Promise
+  req: NextRequest,
+  { params }: { params: Promise<DeleteMessageParams> }
 ) {
-  // Ensure params is resolved
-  const { messageid } = await params; // Await the Promise for params
+  const { messageid } = await params;
 
   // Connect to DB
   await dbConnect();
 
-  // Get the session using getToken (for JWT-based session)
+  // Get the token using getToken
   const token = await getToken({ req, secret: process.env.NEXTAUTH_SECRET });
+  console.log("Token:", token); // For debugging
 
-  if (!token || !token.user) {
+  // Extract the user ID from token
+  const userId = token?.sub || token?._id;
+
+  if (!token || !userId) {
     return NextResponse.json(
       { success: false, message: "Not Authenticated" },
       { status: 401 }
     );
   }
 
-  const user = token.user as User;
-
   try {
     // Attempt to delete the message
     const updateResult = await UserModel.updateOne(
-      { _id: user._id },
+      { _id: userId },
       { $pull: { messages: { _id: messageid } } }
     );
 

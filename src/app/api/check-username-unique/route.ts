@@ -62,7 +62,7 @@ export async function GET(request: NextRequest) {
         success: true,
         message: "Username is available",
       },
-      { status: 200 } // Use 200 for success
+      { status: 200 } 
     );
   } catch (error) {
     console.error("Error checking username:", error);

@@ -26,7 +26,7 @@ export async function POST(request: Request) {
     try {
         const updatedUser = await UserModel.findByIdAndUpdate(
             userId,
-            { isAcceptingMessages: acceptMessages }, // Ensure this field matches the one in POST request
+            { isAcceptingMessages: acceptMessages },
             { new: true}
         )
 
@@ -94,7 +94,7 @@ export async function GET(request: Request) {
         return Response.json(
             {
                 success: true,
-                isAcceptingMessages: foundUser.isAcceptingMessages // Consistent field name
+                isAcceptingMessages: foundUser.isAcceptingMessages 
             },
             { status: 200 }
         )

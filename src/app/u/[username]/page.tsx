@@ -25,7 +25,7 @@ const PublicProfilePage = () => {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({
-          promptOverride: `Generate a completely new set of three engaging, open-ended questions. Separate each question with '||'. Ensure they are different from previous suggestions.`,
+          promptOverride: `Generate a completely new set of three engaging, open-ended questions. Separate each question with '||'. Ensure they are different from previous suggestions. Do not give any additional text, just the 3 questions, Do not number them in the beginning as well`,
         }),
       });
 

@@ -21,7 +21,7 @@ const DashboardPage = () => {
   const [isLoading, setIsLoading] = useState(false);
   const [isSwitchLoading, setIsSwitchLoading] = useState(false);
   const [profileUrl, setProfileUrl] = useState<string>("");
-  
+
   const { toast } = useToast();
   const { data: session } = useSession();
 
@@ -36,7 +36,9 @@ const DashboardPage = () => {
   const fetchAcceptMessage = useCallback(async () => {
     setIsSwitchLoading(true);
     try {
-      const response = await axios.get<ApiResponse>("/api/accept-messages");
+      const response = await axios.get<ApiResponse>("/api/accept-messages", {
+        withCredentials: true, // Include credentials in the request
+      });
       setValue("acceptMessages", response.data.isAcceptingMessages); // Set initial value of switch
     } catch (error) {
       const axiosError = error as AxiosError<ApiResponse>;
@@ -58,7 +60,9 @@ const DashboardPage = () => {
     const animationDelay = new Promise((resolve) => setTimeout(resolve, 1000)); // Add 1-second delay
 
     try {
-      const response = await axios.get<ApiResponse>("/api/get-messages");
+      const response = await axios.get<ApiResponse>("/api/get-messages", {
+        withCredentials: true, // Include credentials in the request
+      });
       setMessages(response.data.messages || []);
 
       if (refresh) {
@@ -85,8 +89,7 @@ const DashboardPage = () => {
     if (!session || !session.user) return;
     fetchAcceptMessage();
     fetchMessages();
-    
-    // Ensure window logic is only executed on the client
+
     if (typeof window !== "undefined" && session.user) {
       const username = (session.user as User).username;
       const baseUrl = `${window.location.protocol}//${window.location.host}`;
@@ -103,9 +106,15 @@ const DashboardPage = () => {
   const handleSwitchChange = async () => {
     setIsSwitchLoading(true);
     try {
-      const response = await axios.post<ApiResponse>("/api/accept-messages", {
-        acceptMessages: !acceptMessages, // Toggle the acceptMessages state
-      });
+      const response = await axios.post<ApiResponse>(
+        "/api/accept-messages",
+        {
+          acceptMessages: !acceptMessages, // Toggle the acceptMessages state
+        },
+        {
+          withCredentials: true, // Include credentials in the request
+        }
+      );
 
       setValue("acceptMessages", !acceptMessages); // Update local state for the form
 
@@ -153,7 +162,7 @@ const DashboardPage = () => {
           <Button onClick={copyToClipboard}>Copy</Button>
         </div>
       </div>
-      <div className="mb-4">
+      <div className="mb-4 flex items-center">
         <Switch
           {...register("acceptMessages")}
           checked={acceptMessages}
@@ -166,17 +175,24 @@ const DashboardPage = () => {
         </span>
       </div>
       <Separator />
-      <Button
-        className="mt-4"
-        variant="outline"
-        onClick={(e) => {
-          e.preventDefault();
-          fetchMessages(true);
-        }}
-        disabled={isLoading}
-      >
-        {isLoading ? <Loader2 className="h-4 w-4 animate-spin" /> : <RefreshCcw className="h-4 w-4" />}
-      </Button>
+      <div className="mt-4 flex items-center space-x-2">
+        <Button
+          variant="outline"
+          onClick={(e) => {
+            e.preventDefault();
+            fetchMessages(true);
+          }}
+          disabled={isLoading}
+          className="flex items-center justify-center h-10 w-10"
+        >
+          {isLoading ? (
+            <Loader2 className="h-5 w-5 animate-spin" />
+          ) : (
+            <RefreshCcw className="h-5 w-5" />
+          )}
+        </Button>
+        <span className="text-gray-700">Refresh Messages</span>
+      </div>
       <div className="mt-4 grid grid-cols-1 md:grid-cols-2 gap-6">
         {messages.length > 0 ? (
           messages.map((message) => (

@@ -155,7 +155,7 @@ const Page = () => {
                   <p className={`text-sm ${usernameMessage.includes('available') ? 'text-green-500' : 'text-red-500'}`}>
                     {usernameMessage}
                   </p>
-                  <p className="text-sm text-red-500">{formErrorMessage}</p> {/* Show form-specific errors */}
+                  <p className="text-sm text-red-500">{formErrorMessage}</p> {}
                   <FormMessage />
                 </FormItem>
               )}
